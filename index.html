@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qual é a Música?</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-2xl w-full max-w-lg text-center">
+
+            <header class="mb-6">
+                <h1 class="text-3xl sm:text-4xl font-bold text-indigo-600 dark:text-indigo-400">Qual é a Música?</h1>
+                <p class="text-gray-600 dark:text-gray-400 mt-2">Ouça o trecho e adivinhe o nome da música!</p>
+            </header>
+
+            <!-- Elemento de Áudio HTML (invisível para o utilizador) -->
+            <audio id="audio-player"></audio>
+
+            <!-- Controles de Áudio Personalizados -->
+            <div id="audio-controls"
+                class="flex items-center justify-center space-x-4 mb-6 p-4 bg-gray-200 dark:bg-gray-700 rounded-lg cursor-pointer">
+                <div id="play-pause-button">
+                    <svg id="play-icon" class="w-10 h-10 text-indigo-600 dark:text-indigo-400" fill="currentColor"
+                        viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    <svg id="pause-icon" class="w-10 h-10 text-indigo-600 dark:text-indigo-400 hidden"
+                        fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd"
+                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 00-1 1v2a1 1 0 102 0V9a1 1 0 00-1-1zm6 0a1 1 0 00-1 1v2a1 1 0 102 0V9a1 1 0 00-1-1z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <span id="status-text" class="font-medium text-lg">Carregando jogo...</span>
+            </div>
+
+            <!-- Controles do Jogo -->
+            <div class="space-y-4">
+                <input type="text" id="guess-input" placeholder="Digite o nome da música..."
+                    class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 border-2 border-transparent focus:border-indigo-500 focus:ring-indigo-500 rounded-lg text-center text-lg transition">
+
+                <button id="guess-button"
+                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg text-lg transition-transform transform hover:scale-105 shadow-lg">
+                    Adivinhar!
+                </button>
+
+                <div id="message-area" class="h-8 text-lg font-medium"></div>
+
+                <div class="flex items-center justify-between pt-4">
+                    <div class="text-left">
+                        <span class="font-bold text-xl">Pontuação: <span id="score">0</span></span>
+                    </div>
+                    <button id="next-button"
+                        class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-5 rounded-lg transition-transform transform hover:scale-105">
+                        Próxima
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. Base de Dados de Músicas ---
+        const songList = [
+            { audioSrc: 'https://www.dropbox.com/scl/fi/l6r36mxrqk7ojqn9mpb0m/Hino-505-Muito-Al-m-do-Sol.webm?rlkey=m7x8i0w19orqq4,i7ewxqrzjyo&st=n942oc38&raw=1', name: 'Muito Além do Sol' },
+            { audioSrc: 'https://www.dropbox.com/scl/fi/unvucjf5m7tj8b6f41ovd/Hino-15-Tu-s-Fiel-Senhor.webm?rlkey=sbpxlczr74x5d0k888ezx0am8&st=og4mj5gm&raw=1', name: 'Tu És Fiel Senhor' },
+            { audioSrc: 'https://www.dropbox.com/scl/fi/wl1tiyq0515rqdax68mnl/Hino-24-Rei-dos-Reis.webm?rlkey=7o0to3woryz942frb3lrtjink&st=4rspeisj&raw=1', name: 'Rei dos Reis' },
+            { audioSrc: 'https://www.dropbox.com/scl/fi/g4xdf4udh4guo74htmp71/Hino-45-Suave-Esp-rito.webm?rlkey=y4mt8loub03wr9tm234wwuawm&st=2v5q5s2x&raw=1', name: 'Suave Espírito' },
+            { audioSrc: 'https://www.dropbox.com/scl/fi/65u55bppr03d2d0apqtc0/Hino-60-Ao-Deus-de-Abra-o-Louvai.webm?rlkey=hqxqpyks7pxjm0ac677otd2tv&st=k8tj2i6p&raw=1', name: 'Ao Deus de Abraão Louvai' },
+            { audioSrc: 'https://www.dropbox.com/scl/fi/0cp5jjfpsknsesajlz8wn/Hino-62-Qu-o-Grande-s-Tu.webm?rlkey=bw5j7qawslhzv52a0ocsfv4np&st=lnt5wjp8&raw=1', name: 'Quão Grande És Tu' },
+            { audioSrc: 'https://www.dropbox.com/scl/fi/i5s4clx41di3g4bf02zyu/Hino-72-Firme-nas-Promessas.webm?rlkey=z1ahw2qwger6zvkjghmlb1u50&st=tjfgcjmy&raw=1', name: 'Firme nas Promessas' },
+            { audioSrc: 'https://www.dropbox.com/scl/fi/0ccqkad22ksqvivi2dgg0/Hino-75-F-a-Vit-ria.webm?rlkey=ey6akawzq2a6pemv3av3yucur&st=3x9zddrq&raw=1', name: 'Fé e Vitória' },
+            { audioSrc: 'https://www.dropbox.com/scl/fi/riqvqe7n8hzfq2fy2kcqg/Hino-153-O-Que-Penso-de-Meu-Mestre.webm?rlkey=wm0v7df4shgvifx1txcxeqdyt&st=kolh2r6m&raw=1', name: 'O Que Penso de Meu Mestre' },
+            { audioSrc: 'https://www.dropbox.com/scl/fi/et9349ysoh8pqw0n41o9m/Hino-168-Eu-Achei.webm?rlkey=j60jwtauapo1objjip7j0u7lw&st=nd4y2phq&raw=1', name: 'Eu Achei' },
+        ];
+        let availableSongs = [...songList];
+
+        // --- 2. Variáveis de Estado do Jogo ---
+        let currentSong = null;
+        let score = 0;
+        let hasGuessed = false;
+
+        // --- 3. Referências aos Elementos DOM ---
+        const audioPlayer = document.getElementById('audio-player');
+        const guessInput = document.getElementById('guess-input');
+        const guessButton = document.getElementById('guess-button');
+        const nextButton = document.getElementById('next-button');
+        const messageArea = document.getElementById('message-area');
+        const scoreDisplay = document.getElementById('score');
+        const audioControls = document.getElementById('audio-controls');
+        const playPauseButton = document.getElementById('play-pause-button');
+        const playIcon = document.getElementById('play-icon');
+        const pauseIcon = document.getElementById('pause-icon');
+        const statusText = document.getElementById('status-text');
+
+        // --- 4. Funções de Lógica do Jogo ---
+
+        function loadNextSong() {
+            if (availableSongs.length === 0) {
+                availableSongs = [...songList];
+                messageArea.textContent = "Você zerou o jogo! Reiniciando...";
+            }
+
+            const songIndex = Math.floor(Math.random() * availableSongs.length);
+            currentSong = availableSongs[songIndex];
+            availableSongs.splice(songIndex, 1);
+
+            resetRound();
+
+            // Define a fonte do áudio e prepara-o para tocar
+            audioPlayer.src = currentSong.audioSrc;
+            audioPlayer.load(); // Carrega o ficheiro de áudio
+        }
+
+        // Alterna entre tocar e pausar a música.
+        function togglePlayback() {
+            if (audioPlayer.paused) {
+                audioPlayer.play();
+            } else {
+                audioPlayer.pause();
+            }
+        }
+
+        // Verifica o palpite do utilizador.
+        function checkGuess() {
+            if (hasGuessed || !currentSong) return;
+
+            const userGuess = guessInput.value.trim().toLowerCase();
+            const correctName = currentSong.name.trim().toLowerCase();
+
+            if (userGuess === correctName) {
+                messageArea.textContent = "🎉 Correto! 🎉";
+                messageArea.classList.add('text-green-500');
+                score++;
+                scoreDisplay.textContent = score;
+                hasGuessed = true;
+                guessButton.disabled = true;
+                guessButton.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                messageArea.textContent = "❌ Tente novamente! ❌";
+                messageArea.classList.add('text-red-500');
+            }
+        }
+
+        // Reseta a interface para a próxima rodada.
+        function resetRound() {
+            audioPlayer.pause(); // Para a música anterior
+            audioPlayer.currentTime = 0; // Reinicia o tempo da música
+            messageArea.textContent = '';
+            messageArea.classList.remove('text-green-500', 'text-red-500');
+            guessInput.value = '';
+            guessInput.focus();
+            hasGuessed = false;
+            guessButton.disabled = false;
+            guessButton.classList.remove('opacity-50', 'cursor-not-allowed');
+            statusText.textContent = 'Carregando música...';
+        }
+
+        // --- 5. Event Listeners ---
+        audioControls.addEventListener('click', togglePlayback);
+        guessButton.addEventListener('click', checkGuess);
+        nextButton.addEventListener('click', loadNextSong);
+
+        guessInput.addEventListener('keypress', function (event) {
+            if (event.key === 'Enter') {
+                checkGuess();
+            }
+        });
+
+        // Event listeners para o leitor de áudio
+        audioPlayer.addEventListener('play', () => {
+            playIcon.classList.add('hidden');
+            pauseIcon.classList.remove('hidden');
+            statusText.textContent = 'A tocar...';
+        });
+
+        audioPlayer.addEventListener('pause', () => {
+            pauseIcon.classList.add('hidden');
+            playIcon.classList.remove('hidden');
+            statusText.textContent = 'Em pausa';
+        });
+
+        audioPlayer.addEventListener('ended', () => {
+            pauseIcon.classList.add('hidden');
+            playIcon.classList.remove('hidden');
+            statusText.textContent = 'A música terminou!';
+        });
+
+        // Quando o áudio pode ser tocado, atualiza o status
+        audioPlayer.addEventListener('canplay', () => {
+            statusText.textContent = 'Música pronta!';
+        });
+
+        // Em caso de erro ao carregar o áudio
+        audioPlayer.addEventListener('error', () => {
+            statusText.textContent = 'Erro ao carregar MP3.';
+            // Opcional: tentar carregar a próxima música
+            // setTimeout(loadNextSong, 2000); 
+        });
+
+        // --- 6. Iniciar o jogo ---
+        window.onload = loadNextSong;
+
+    </script>
+</body>
+
+</html>
