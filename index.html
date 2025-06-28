@@ -168,10 +168,9 @@
             { audioSrc: 'https://www.dropbox.com/scl/fi/210vshpy3hkt7xj0fd3c0/TOMA-O-MEU-CORA-O-_-PRISMA-BRASIL-_-MENOS-UM.webm?rlkey=ujqo50s8549pc4qvoi7rgeqr7&raw=1', name: 'Toma o Meu Coração' },
             { audioSrc: 'https://www.dropbox.com/scl/fi/bfu4vv7wrh40r6dx0s6wi/Meu-Lar-Prisma-Brasil-V-deo-com-Letra.webm?rlkey=o4i1471ipduf6ukozxx96phd2&raw=1', name: 'Meu Lar' },
         ];
-        // Esta lista guardará a ordem das músicas baralhadas.
-        let availableSongs = [];
-
-        // --- 2. Variáveis de Estado do Jogo ---
+        // --- 2. Variáveis de Estado do Jogo (Lógica reescrita) ---
+        let shuffledPlaylist = [];
+        let currentPlaylistIndex = 0;
         let currentSong = null;
         let score = 0;
         let hasGuessed = false;
@@ -184,7 +183,6 @@
         const messageArea = document.getElementById('message-area');
         const scoreDisplay = document.getElementById('score');
         const audioControls = document.getElementById('audio-controls');
-        const playPauseButton = document.getElementById('play-pause-button');
         const playIcon = document.getElementById('play-icon');
         const pauseIcon = document.getElementById('pause-icon');
         const statusText = document.getElementById('status-text');
@@ -194,7 +192,6 @@
         /**
          * Função para baralhar uma lista (algoritmo Fisher-Yates).
          * @param {Array} array - A lista a ser baralhada.
-         * @returns {Array} A lista baralhada.
          */
         function shuffle(array) {
             let currentIndex = array.length,  randomIndex;
@@ -203,35 +200,35 @@
                 currentIndex--;
                 [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
             }
-            return array;
         }
 
         /**
          * Carrega a próxima música da lista baralhada.
          */
         function loadNextSong() {
-            // Se a lista de músicas disponíveis acabou, cria uma nova lista baralhada.
-            if (availableSongs.length === 0) {
-                if (songList.length > 0) {
-                    messageArea.textContent = "A baralhar novas músicas!";
-                    availableSongs = shuffle([...songList]); // Baralha uma cópia da lista principal
-                } else {
+            // Se a playlist acabou ou é a primeira vez, baralha a lista.
+            if (currentPlaylistIndex >= shuffledPlaylist.length) {
+                if (songList.length === 0) {
                     statusText.textContent = "Adicione músicas à lista!";
                     return;
                 }
+                messageArea.textContent = "A baralhar novas músicas!";
+                shuffledPlaylist = [...songList]; // Copia a lista original
+                shuffle(shuffledPlaylist); // Baralha a lista
+                currentPlaylistIndex = 0; // Reinicia o índice
             }
             
-            // Retira a última música da lista baralhada.
-            currentSong = availableSongs.pop();
+            // Pega a próxima música da playlist baralhada.
+            currentSong = shuffledPlaylist[currentPlaylistIndex];
+            currentPlaylistIndex++; // Prepara o índice para a próxima
             
             resetRound();
 
-            // Define a fonte do áudio e prepara-o para tocar
+            // Define a fonte do áudio e prepara-o para tocar.
             audioPlayer.src = currentSong.audioSrc;
-            audioPlayer.load(); // Carrega o ficheiro de áudio
+            audioPlayer.load();
         }
         
-        // Alterna entre tocar e pausar a música.
         function togglePlayback() {
             if (!currentSong) return;
             if (audioPlayer.paused) {
@@ -241,7 +238,6 @@
             }
         }
         
-        // Verifica o palpite do utilizador.
         function checkGuess() {
             if (hasGuessed || !currentSong) return;
 
@@ -262,11 +258,13 @@
             }
         }
 
-        // Reseta a interface para a próxima rodada.
         function resetRound() {
-            audioPlayer.pause(); // Para a música anterior
-            audioPlayer.currentTime = 0; // Reinicia o tempo da música
-            messageArea.textContent = '';
+            audioPlayer.pause();
+            audioPlayer.currentTime = 0;
+            // A mensagem de "baralhar" é mostrada em loadNextSong, aqui limpamos para a próxima.
+            if (messageArea.textContent !== "A baralhar novas músicas!") {
+                 messageArea.textContent = '';
+            }
             messageArea.classList.remove('text-green-500', 'text-red-500');
             guessInput.value = '';
             guessInput.focus();
@@ -287,7 +285,6 @@
             }
         });
         
-        // Event listeners para o leitor de áudio
         audioPlayer.addEventListener('play', () => {
             playIcon.classList.add('hidden');
             pauseIcon.classList.remove('hidden');
