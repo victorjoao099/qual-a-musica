@@ -13,7 +13,7 @@
         body {
             font-family: 'Inter', sans-serif;
         }
-        /* Nova animação mais elaborada para a resposta correta */
+        /* Animação para a resposta correta */
         @keyframes reveal-correct {
             0% {
                 opacity: 0;
@@ -34,13 +34,43 @@
         .animate-reveal-correct {
             animation: reveal-correct 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         }
+
+        /* Nova animação elaborada para o Fim de Jogo */
+        @keyframes reveal-gameover {
+            0% {
+                transform: translateY(-100px) scale(0.5);
+                opacity: 0;
+            }
+            60% {
+                transform: translateY(20px) scale(1.1);
+                opacity: 1;
+            }
+            80% {
+                transform: translateY(-5px) scale(0.95);
+            }
+            100% {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+        .animate-gameover {
+            animation: reveal-gameover 0.8s ease-out forwards;
+        }
     </style>
 </head>
 
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
 
     <div class="min-h-screen flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-2xl w-full max-w-lg text-center">
+        <div class="relative bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-2xl w-full max-w-lg text-center">
+            
+            <!-- Ecrã de Fim de Jogo Sobreposto -->
+            <div id="game-over-overlay" class="hidden absolute inset-0 bg-black bg-opacity-75 flex-col items-center justify-center rounded-2xl z-10 p-4">
+                <h2 id="game-over-text" class="text-5xl sm:text-6xl font-bold text-red-500">Fim de Jogo!</h2>
+                <button id="restart-button-overlay" class="mt-8 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg text-xl transition-transform transform hover:scale-105">
+                    Recomeçar
+                </button>
+            </div>
             
             <header class="mb-6">
                 <h1 class="text-3xl sm:text-4xl font-bold text-indigo-600 dark:text-indigo-400">Qual é a Música?</h1>
@@ -202,6 +232,9 @@
         const playIcon = document.getElementById('play-icon');
         const pauseIcon = document.getElementById('pause-icon');
         const statusText = document.getElementById('status-text');
+        const gameOverOverlay = document.getElementById('game-over-overlay');
+        const gameOverText = document.getElementById('game-over-text');
+        const restartButtonOverlay = document.getElementById('restart-button-overlay');
         
         // --- 4. Funções de Lógica do Jogo ---
 
@@ -215,9 +248,8 @@
         }
 
         function updateLivesDisplay() {
-            livesDisplay.innerHTML = ''; // Limpa os corações existentes
+            livesDisplay.innerHTML = '';
             for (let i = 0; i < MAX_LIVES; i++) {
-                // Adiciona um coração preenchido se ainda tiver a vida, ou um vazio se perdeu
                 const heartIcon = i < lives 
                     ? `<svg class="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path></svg>`
                     : `<svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>`;
@@ -227,13 +259,12 @@
 
         function gameOver() {
             isGameOver = true;
-            messageArea.innerHTML = 'Fim de Jogo!';
-            messageArea.classList.add('text-red-500');
-            guessInput.disabled = true;
-            guessButton.disabled = true;
-            guessButton.classList.add('opacity-50', 'cursor-not-allowed');
             audioPlayer.pause();
-            nextButton.textContent = 'Recomeçar';
+            gameOverOverlay.classList.remove('hidden');
+            gameOverOverlay.classList.add('flex');
+            gameOverText.classList.add('animate-gameover');
+            guessButton.disabled = true;
+            nextButton.disabled = true;
         }
 
         function restartGame() {
@@ -242,8 +273,12 @@
             lives = MAX_LIVES;
             scoreDisplay.textContent = score;
             guessInput.disabled = false;
-            nextButton.textContent = 'Próxima';
-            currentPlaylistIndex = shuffledPlaylist.length; // Força um novo baralhar
+            guessButton.disabled = false;
+            nextButton.disabled = false;
+            gameOverOverlay.classList.add('hidden');
+            gameOverOverlay.classList.remove('flex');
+            gameOverText.classList.remove('animate-gameover');
+            currentPlaylistIndex = shuffledPlaylist.length;
             loadNextSong();
         }
 
@@ -285,7 +320,6 @@
             const userGuess = guessInput.value.trim().toLowerCase();
             const correctName = currentSong.name.trim().toLowerCase();
             
-            // Limpa animações anteriores
             messageArea.classList.remove('animate-reveal-correct');
 
             if (userGuess === correctName) {
@@ -296,7 +330,6 @@
                 scoreDisplay.textContent = score;
                 hasGuessed = true;
                 guessButton.disabled = true;
-                guessButton.classList.add('opacity-50', 'cursor-not-allowed');
             } else {
                 lives--;
                 updateLivesDisplay();
@@ -319,27 +352,17 @@
             guessInput.value = '';
             guessInput.focus();
             hasGuessed = false;
-            guessButton.disabled = false;
-            guessButton.classList.remove('opacity-50', 'cursor-not-allowed');
-            statusText.textContent = 'A carregar música...';
-            updateLivesDisplay(); // Garante que os corações são mostrados no início de cada rodada
+            updateLivesDisplay();
         }
 
         // --- 5. Event Listeners ---
         audioControls.addEventListener('click', togglePlayback);
         guessButton.addEventListener('click', checkGuess);
-        nextButton.addEventListener('click', () => {
-            if (isGameOver) {
-                restartGame();
-            } else {
-                loadNextSong();
-            }
-        });
+        nextButton.addEventListener('click', loadNextSong);
+        restartButtonOverlay.addEventListener('click', restartGame);
         
         guessInput.addEventListener('keypress', function(event) {
             if (event.key === 'Enter') {
-                // Força o navegador a re-executar a animação, se necessário
-                void messageArea.offsetWidth;
                 checkGuess();
             }
         });
