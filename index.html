@@ -77,7 +77,7 @@
     <script>
         // --- 1. Base de Dados de Músicas ---
         const songList = [
-            { audioSrc: 'https://www.dropbox.com/scl/fi/l6r36mxrqk7ojqn9mpb0m/Hino-505-Muito-Al-m-do-Sol.webm?rlkey=m7x8i0w19orqq4,i7ewxqrzjyo&st=n942oc38&raw=1', name: 'Muito Além do Sol' },
+            { audioSrc: 'https://www.dropbox.com/scl/fi/l6r36mxrqk7ojqn9mpb0m/Hino-505-Muito-Al-m-do-Sol.webm?rlkey=m7x8i0w19orqq4i7ewxqrzjyo&st=nu4cf5r5&raw=1', name: 'Muito Além do Sol' },
             { audioSrc: 'https://www.dropbox.com/scl/fi/unvucjf5m7tj8b6f41ovd/Hino-15-Tu-s-Fiel-Senhor.webm?rlkey=sbpxlczr74x5d0k888ezx0am8&st=og4mj5gm&raw=1', name: 'Tu És Fiel Senhor' },
             { audioSrc: 'https://www.dropbox.com/scl/fi/wl1tiyq0515rqdax68mnl/Hino-24-Rei-dos-Reis.webm?rlkey=7o0to3woryz942frb3lrtjink&st=4rspeisj&raw=1', name: 'Rei dos Reis' },
             { audioSrc: 'https://www.dropbox.com/scl/fi/g4xdf4udh4guo74htmp71/Hino-45-Suave-Esp-rito.webm?rlkey=y4mt8loub03wr9tm234wwuawm&st=2v5q5s2x&raw=1', name: 'Suave Espírito' },
@@ -101,7 +101,8 @@
             { audioSrc: 'https://www.dropbox.com/scl/fi/8s4shq9nq4z07c3t1nu20/Hino-499-Mans-o-Sobre-o-Monte.webm?rlkey=2bukdtcd85d8cxfb9tyz4dryq&st=7khk2ds9&raw=1', name: 'Mansão Sobre o Monte' },
             { audioSrc: 'https://www.dropbox.com/scl/fi/vql8a94z7jk2p1pz9qvf1/Hino-502-Saudade.webm?rlkey=e9k3bfn2996fkutvi28qnw7ex&st=zwehknkh&raw=1', name: 'Saudade' },
         ];
-        let availableSongs = [...songList];
+        // Esta lista guardará a ordem das músicas baralhadas.
+        let availableSongs = [];
 
         // --- 2. Variáveis de Estado do Jogo ---
         let currentSong = null;
@@ -120,35 +121,59 @@
         const playIcon = document.getElementById('play-icon');
         const pauseIcon = document.getElementById('pause-icon');
         const statusText = document.getElementById('status-text');
-
+        
         // --- 4. Funções de Lógica do Jogo ---
 
-        function loadNextSong() {
-            if (availableSongs.length === 0) {
-                availableSongs = [...songList];
-                messageArea.textContent = "Você zerou o jogo! Reiniciando...";
+        /**
+         * Função para baralhar uma lista (algoritmo Fisher-Yates).
+         * @param {Array} array - A lista a ser baralhada.
+         * @returns {Array} A lista baralhada.
+         */
+        function shuffle(array) {
+            let currentIndex = array.length,  randomIndex;
+            while (currentIndex > 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
             }
+            return array;
+        }
 
-            const songIndex = Math.floor(Math.random() * availableSongs.length);
-            currentSong = availableSongs[songIndex];
-            availableSongs.splice(songIndex, 1);
-
+        /**
+         * Carrega a próxima música da lista baralhada.
+         */
+        function loadNextSong() {
+            // Se a lista de músicas disponíveis acabou, cria uma nova lista baralhada.
+            if (availableSongs.length === 0) {
+                if (songList.length > 0) {
+                    messageArea.textContent = "A baralhar novas músicas!";
+                    availableSongs = shuffle([...songList]); // Baralha uma cópia da lista principal
+                } else {
+                    statusText.textContent = "Adicione músicas à lista!";
+                    return;
+                }
+            }
+            
+            // Retira a última música da lista baralhada.
+            currentSong = availableSongs.pop();
+            
             resetRound();
 
             // Define a fonte do áudio e prepara-o para tocar
             audioPlayer.src = currentSong.audioSrc;
             audioPlayer.load(); // Carrega o ficheiro de áudio
         }
-
+        
         // Alterna entre tocar e pausar a música.
         function togglePlayback() {
+            if (!currentSong) return;
             if (audioPlayer.paused) {
                 audioPlayer.play();
             } else {
                 audioPlayer.pause();
             }
         }
-
+        
         // Verifica o palpite do utilizador.
         function checkGuess() {
             if (hasGuessed || !currentSong) return;
@@ -181,20 +206,20 @@
             hasGuessed = false;
             guessButton.disabled = false;
             guessButton.classList.remove('opacity-50', 'cursor-not-allowed');
-            statusText.textContent = 'Carregando música...';
+            statusText.textContent = 'A carregar música...';
         }
 
         // --- 5. Event Listeners ---
         audioControls.addEventListener('click', togglePlayback);
         guessButton.addEventListener('click', checkGuess);
         nextButton.addEventListener('click', loadNextSong);
-
-        guessInput.addEventListener('keypress', function (event) {
+        
+        guessInput.addEventListener('keypress', function(event) {
             if (event.key === 'Enter') {
                 checkGuess();
             }
         });
-
+        
         // Event listeners para o leitor de áudio
         audioPlayer.addEventListener('play', () => {
             playIcon.classList.add('hidden');
@@ -214,16 +239,12 @@
             statusText.textContent = 'A música terminou!';
         });
 
-        // Quando o áudio pode ser tocado, atualiza o status
         audioPlayer.addEventListener('canplay', () => {
             statusText.textContent = 'Música pronta!';
         });
 
-        // Em caso de erro ao carregar o áudio
         audioPlayer.addEventListener('error', () => {
             statusText.textContent = 'Erro ao carregar MP3.';
-            // Opcional: tentar carregar a próxima música
-            // setTimeout(loadNextSong, 2000); 
         });
 
         // --- 6. Iniciar o jogo ---
@@ -231,5 +252,4 @@
 
     </script>
 </body>
-
 </html>
