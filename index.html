@@ -20,7 +20,7 @@
 
     <div class="min-h-screen flex items-center justify-center p-4">
         <div class="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-2xl w-full max-w-lg text-center">
-
+            
             <header class="mb-6">
                 <h1 class="text-3xl sm:text-4xl font-bold text-indigo-600 dark:text-indigo-400">Qual é a Música?</h1>
                 <p class="text-gray-600 dark:text-gray-400 mt-2">Ouça o trecho e adivinhe o nome da música!</p>
@@ -30,45 +30,36 @@
             <audio id="audio-player"></audio>
 
             <!-- Controles de Áudio Personalizados -->
-            <div id="audio-controls"
-                class="flex items-center justify-center space-x-4 mb-6 p-4 bg-gray-200 dark:bg-gray-700 rounded-lg cursor-pointer">
+            <div id="audio-controls" class="flex items-center justify-center space-x-4 mb-6 p-4 bg-gray-200 dark:bg-gray-700 rounded-lg cursor-pointer">
                 <div id="play-pause-button">
-                    <svg id="play-icon" class="w-10 h-10 text-indigo-600 dark:text-indigo-400" fill="currentColor"
-                        viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
-                            clip-rule="evenodd"></path>
-                    </svg>
-                    <svg id="pause-icon" class="w-10 h-10 text-indigo-600 dark:text-indigo-400 hidden"
-                        fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd"
-                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 00-1 1v2a1 1 0 102 0V9a1 1 0 00-1-1zm6 0a1 1 0 00-1 1v2a1 1 0 102 0V9a1 1 0 00-1-1z"
-                            clip-rule="evenodd"></path>
-                    </svg>
+                    <svg id="play-icon" class="w-10 h-10 text-indigo-600 dark:text-indigo-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
+                    <svg id="pause-icon" class="w-10 h-10 text-indigo-600 dark:text-indigo-400 hidden" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 00-1 1v2a1 1 0 102 0V9a1 1 0 00-1-1zm6 0a1 1 0 00-1 1v2a1 1 0 102 0V9a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
                 </div>
                 <span id="status-text" class="font-medium text-lg">Carregando jogo...</span>
             </div>
 
             <!-- Controles do Jogo -->
             <div class="space-y-4">
-                <input type="text" id="guess-input" placeholder="Digite o nome da música..."
-                    class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 border-2 border-transparent focus:border-indigo-500 focus:ring-indigo-500 rounded-lg text-center text-lg transition">
-
-                <button id="guess-button"
-                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg text-lg transition-transform transform hover:scale-105 shadow-lg">
+                <input type="text" id="guess-input" placeholder="Digite o nome da música..." class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 border-2 border-transparent focus:border-indigo-500 focus:ring-indigo-500 rounded-lg text-center text-lg transition">
+                
+                <button id="guess-button" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg text-lg transition-transform transform hover:scale-105 shadow-lg">
                     Adivinhar!
                 </button>
 
-                <div id="message-area" class="h-8 text-lg font-medium"></div>
+                <div id="message-area" class="h-10 text-2xl font-bold flex items-center justify-center"></div>
 
                 <div class="flex items-center justify-between pt-4">
-                    <div class="text-left">
+                    <div class="flex-1 text-left">
                         <span class="font-bold text-xl">Pontuação: <span id="score">0</span></span>
                     </div>
-                    <button id="next-button"
-                        class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-5 rounded-lg transition-transform transform hover:scale-105">
-                        Próxima
-                    </button>
+                    <div id="lives-display" class="flex items-center space-x-1">
+                        <!-- Corações que representam as vidas serão inseridos aqui via JS -->
+                    </div>
+                    <div class="flex-1 flex justify-end">
+                        <button id="next-button" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-5 rounded-lg transition-transform transform hover:scale-105">
+                            Próxima
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -168,12 +159,15 @@
             { audioSrc: 'https://www.dropbox.com/scl/fi/210vshpy3hkt7xj0fd3c0/TOMA-O-MEU-CORA-O-_-PRISMA-BRASIL-_-MENOS-UM.webm?rlkey=ujqo50s8549pc4qvoi7rgeqr7&raw=1', name: 'Toma o Meu Coração' },
             { audioSrc: 'https://www.dropbox.com/scl/fi/bfu4vv7wrh40r6dx0s6wi/Meu-Lar-Prisma-Brasil-V-deo-com-Letra.webm?rlkey=o4i1471ipduf6ukozxx96phd2&raw=1', name: 'Meu Lar' },
         ];
-        // --- 2. Variáveis de Estado do Jogo (Lógica reescrita) ---
+        // --- 2. Variáveis de Estado do Jogo ---
         let shuffledPlaylist = [];
         let currentPlaylistIndex = 0;
         let currentSong = null;
         let score = 0;
         let hasGuessed = false;
+        const MAX_LIVES = 3;
+        let lives = MAX_LIVES;
+        let isGameOver = false;
 
         // --- 3. Referências aos Elementos DOM ---
         const audioPlayer = document.getElementById('audio-player');
@@ -182,19 +176,16 @@
         const nextButton = document.getElementById('next-button');
         const messageArea = document.getElementById('message-area');
         const scoreDisplay = document.getElementById('score');
+        const livesDisplay = document.getElementById('lives-display');
         const audioControls = document.getElementById('audio-controls');
         const playIcon = document.getElementById('play-icon');
         const pauseIcon = document.getElementById('pause-icon');
         const statusText = document.getElementById('status-text');
-        
+
         // --- 4. Funções de Lógica do Jogo ---
 
-        /**
-         * Função para baralhar uma lista (algoritmo Fisher-Yates).
-         * @param {Array} array - A lista a ser baralhada.
-         */
         function shuffle(array) {
-            let currentIndex = array.length,  randomIndex;
+            let currentIndex = array.length, randomIndex;
             while (currentIndex > 0) {
                 randomIndex = Math.floor(Math.random() * currentIndex);
                 currentIndex--;
@@ -202,68 +193,103 @@
             }
         }
 
-        /**
-         * Carrega a próxima música da lista baralhada.
-         */
+        function updateLivesDisplay() {
+            livesDisplay.innerHTML = ''; // Limpa os corações existentes
+            for (let i = 0; i < MAX_LIVES; i++) {
+                // Adiciona um coração preenchido se ainda tiver a vida, ou um vazio se perdeu
+                const heartIcon = i < lives
+                    ? `<svg class="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path></svg>`
+                    : `<svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>`;
+                livesDisplay.innerHTML += heartIcon;
+            }
+        }
+
+        function gameOver() {
+            isGameOver = true;
+            messageArea.innerHTML = 'Fim de Jogo!';
+            messageArea.classList.add('text-red-500');
+            guessInput.disabled = true;
+            guessButton.disabled = true;
+            guessButton.classList.add('opacity-50', 'cursor-not-allowed');
+            audioPlayer.pause();
+            nextButton.textContent = 'Recomeçar';
+        }
+
+        function restartGame() {
+            isGameOver = false;
+            score = 0;
+            lives = MAX_LIVES;
+            scoreDisplay.textContent = score;
+            guessInput.disabled = false;
+            nextButton.textContent = 'Próxima';
+            currentPlaylistIndex = shuffledPlaylist.length; // Força um novo baralhar
+            loadNextSong();
+        }
+
         function loadNextSong() {
-            // Se a playlist acabou ou é a primeira vez, baralha a lista.
             if (currentPlaylistIndex >= shuffledPlaylist.length) {
                 if (songList.length === 0) {
                     statusText.textContent = "Adicione músicas à lista!";
                     return;
                 }
-                messageArea.textContent = "A baralhar novas músicas!";
-                shuffledPlaylist = [...songList]; // Copia a lista original
-                shuffle(shuffledPlaylist); // Baralha a lista
-                currentPlaylistIndex = 0; // Reinicia o índice
+                if (shuffledPlaylist.length > 0) {
+                    messageArea.textContent = "A baralhar novas músicas!";
+                }
+                shuffledPlaylist = [...songList];
+                shuffle(shuffledPlaylist);
+                currentPlaylistIndex = 0;
             }
-            
-            // Pega a próxima música da playlist baralhada.
+
             currentSong = shuffledPlaylist[currentPlaylistIndex];
-            currentPlaylistIndex++; // Prepara o índice para a próxima
-            
+            currentPlaylistIndex++;
+
             resetRound();
 
-            // Define a fonte do áudio e prepara-o para tocar.
             audioPlayer.src = currentSong.audioSrc;
             audioPlayer.load();
         }
-        
+
         function togglePlayback() {
-            if (!currentSong) return;
+            if (!currentSong || isGameOver) return;
             if (audioPlayer.paused) {
                 audioPlayer.play();
             } else {
                 audioPlayer.pause();
             }
         }
-        
+
         function checkGuess() {
-            if (hasGuessed || !currentSong) return;
+            if (hasGuessed || !currentSong || isGameOver) return;
 
             const userGuess = guessInput.value.trim().toLowerCase();
             const correctName = currentSong.name.trim().toLowerCase();
 
             if (userGuess === correctName) {
-                messageArea.textContent = "🎉 Correto! 🎉";
+                messageArea.innerHTML = `<span class="animate-reveal">${currentSong.name}</span>`;
                 messageArea.classList.add('text-green-500');
+                messageArea.classList.remove('text-red-500');
                 score++;
                 scoreDisplay.textContent = score;
                 hasGuessed = true;
                 guessButton.disabled = true;
                 guessButton.classList.add('opacity-50', 'cursor-not-allowed');
             } else {
-                messageArea.textContent = "❌ Tente novamente! ❌";
+                lives--;
+                updateLivesDisplay();
+                messageArea.innerHTML = '❌ Errado! ❌';
                 messageArea.classList.add('text-red-500');
+                messageArea.classList.remove('text-green-500');
+                if (lives <= 0) {
+                    gameOver();
+                }
             }
         }
 
         function resetRound() {
             audioPlayer.pause();
             audioPlayer.currentTime = 0;
-            // A mensagem de "baralhar" é mostrada em loadNextSong, aqui limpamos para a próxima.
             if (messageArea.textContent !== "A baralhar novas músicas!") {
-                 messageArea.textContent = '';
+                messageArea.innerHTML = '';
             }
             messageArea.classList.remove('text-green-500', 'text-red-500');
             guessInput.value = '';
@@ -272,41 +298,44 @@
             guessButton.disabled = false;
             guessButton.classList.remove('opacity-50', 'cursor-not-allowed');
             statusText.textContent = 'A carregar música...';
+            updateLivesDisplay(); // Garante que os corações são mostrados no início de cada rodada
         }
 
         // --- 5. Event Listeners ---
         audioControls.addEventListener('click', togglePlayback);
         guessButton.addEventListener('click', checkGuess);
-        nextButton.addEventListener('click', loadNextSong);
-        
-        guessInput.addEventListener('keypress', function(event) {
+        nextButton.addEventListener('click', () => {
+            if (isGameOver) {
+                restartGame();
+            } else {
+                loadNextSong();
+            }
+        });
+
+        guessInput.addEventListener('keypress', function (event) {
             if (event.key === 'Enter') {
                 checkGuess();
             }
         });
-        
+
         audioPlayer.addEventListener('play', () => {
             playIcon.classList.add('hidden');
             pauseIcon.classList.remove('hidden');
             statusText.textContent = 'A tocar...';
         });
-
         audioPlayer.addEventListener('pause', () => {
             pauseIcon.classList.add('hidden');
             playIcon.classList.remove('hidden');
             statusText.textContent = 'Em pausa';
         });
-
         audioPlayer.addEventListener('ended', () => {
             pauseIcon.classList.add('hidden');
             playIcon.classList.remove('hidden');
             statusText.textContent = 'A música terminou!';
         });
-
         audioPlayer.addEventListener('canplay', () => {
             statusText.textContent = 'Música pronta!';
         });
-
         audioPlayer.addEventListener('error', () => {
             statusText.textContent = 'Erro ao carregar MP3.';
         });
@@ -316,4 +345,5 @@
 
     </script>
 </body>
+
 </html>
