@@ -13,6 +13,27 @@
         body {
             font-family: 'Inter', sans-serif;
         }
+        /* Nova animação mais elaborada para a resposta correta */
+        @keyframes reveal-correct {
+            0% {
+                opacity: 0;
+                transform: translateY(20px) scale(0.6);
+            }
+            60% {
+                opacity: 1;
+                transform: translateY(-10px) scale(1.1);
+            }
+            80% {
+                transform: translateY(5px) scale(0.95);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        .animate-reveal-correct {
+            animation: reveal-correct 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
     </style>
 </head>
 
@@ -181,11 +202,11 @@
         const playIcon = document.getElementById('play-icon');
         const pauseIcon = document.getElementById('pause-icon');
         const statusText = document.getElementById('status-text');
-
+        
         // --- 4. Funções de Lógica do Jogo ---
 
         function shuffle(array) {
-            let currentIndex = array.length, randomIndex;
+            let currentIndex = array.length,  randomIndex;
             while (currentIndex > 0) {
                 randomIndex = Math.floor(Math.random() * currentIndex);
                 currentIndex--;
@@ -197,7 +218,7 @@
             livesDisplay.innerHTML = ''; // Limpa os corações existentes
             for (let i = 0; i < MAX_LIVES; i++) {
                 // Adiciona um coração preenchido se ainda tiver a vida, ou um vazio se perdeu
-                const heartIcon = i < lives
+                const heartIcon = i < lives 
                     ? `<svg class="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path></svg>`
                     : `<svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>`;
                 livesDisplay.innerHTML += heartIcon;
@@ -239,16 +260,16 @@
                 shuffle(shuffledPlaylist);
                 currentPlaylistIndex = 0;
             }
-
+            
             currentSong = shuffledPlaylist[currentPlaylistIndex];
             currentPlaylistIndex++;
-
+            
             resetRound();
 
             audioPlayer.src = currentSong.audioSrc;
             audioPlayer.load();
         }
-
+        
         function togglePlayback() {
             if (!currentSong || isGameOver) return;
             if (audioPlayer.paused) {
@@ -257,16 +278,19 @@
                 audioPlayer.pause();
             }
         }
-
+        
         function checkGuess() {
             if (hasGuessed || !currentSong || isGameOver) return;
 
             const userGuess = guessInput.value.trim().toLowerCase();
             const correctName = currentSong.name.trim().toLowerCase();
+            
+            // Limpa animações anteriores
+            messageArea.classList.remove('animate-reveal-correct');
 
             if (userGuess === correctName) {
-                messageArea.innerHTML = `<span class="animate-reveal">${currentSong.name}</span>`;
-                messageArea.classList.add('text-green-500');
+                messageArea.textContent = currentSong.name;
+                messageArea.classList.add('text-green-500', 'animate-reveal-correct');
                 messageArea.classList.remove('text-red-500');
                 score++;
                 scoreDisplay.textContent = score;
@@ -289,9 +313,9 @@
             audioPlayer.pause();
             audioPlayer.currentTime = 0;
             if (messageArea.textContent !== "A baralhar novas músicas!") {
-                messageArea.innerHTML = '';
+                 messageArea.innerHTML = '';
             }
-            messageArea.classList.remove('text-green-500', 'text-red-500');
+            messageArea.classList.remove('text-green-500', 'text-red-500', 'animate-reveal-correct');
             guessInput.value = '';
             guessInput.focus();
             hasGuessed = false;
@@ -311,13 +335,15 @@
                 loadNextSong();
             }
         });
-
-        guessInput.addEventListener('keypress', function (event) {
+        
+        guessInput.addEventListener('keypress', function(event) {
             if (event.key === 'Enter') {
+                // Força o navegador a re-executar a animação, se necessário
+                void messageArea.offsetWidth;
                 checkGuess();
             }
         });
-
+        
         audioPlayer.addEventListener('play', () => {
             playIcon.classList.add('hidden');
             pauseIcon.classList.remove('hidden');
@@ -345,5 +371,4 @@
 
     </script>
 </body>
-
 </html>
